@@ -1,36 +1,41 @@
-# This is a basic workflow to help you get started with Actions
+name: CI on Ubuntu
 
-name: CI
-
-# Controls when the workflow will run
+# 1. Define when the workflow runs (triggers)
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# 2. Define the jobs that make up the workflow
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  build-and-test:
+    # 3. Specify the runner operating system
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    # 4. Define a sequence of steps for the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      # Checkout the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      # Run a multi-line script on the Ubuntu runner
+      - name: Display system information
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          echo "Running on the following Ubuntu version:"
+          cat /etc/os-release
+          echo "The current working directory is: $(pwd)"
+          echo "The runner's home directory is: $HOME"
+          echo "The current user is: $(whoami)"
+
+      # Install a package using apt (a common Ubuntu package manager)
+      - name: Install a utility (e.g., jq)
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      # Run a simple test command
+      - name: Run a test
+        run: |
+          echo "All checks passed!"
+          jq --version
