@@ -1,0 +1,45 @@
+name: Ubuntu - CI Example
+
+on:
+  workflow_dispatch:    # manually triggerable
+  push:
+    branches:
+      - main
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install apt packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git curl
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run tests / script
+        run: |
+          # Run your test suite or script here
+          python -m pytest -q || true
+          python your_script.py
+
+      - name: Save logs and artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-logs
+          path: |
+            ./test-results || true
+            ./app.log || true
