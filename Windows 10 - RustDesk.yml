@@ -19,10 +19,10 @@ jobs:
         with:
           python-version: '3.11'
           
-      # Step 3: INSTALL THE PYTEST TOOL (The Fix!)
+      # Step 3: INSTALL THE PYTEST TOOL (The Fix for "No module named pytest")
       - name: 3. Install Pytest
         run: pip install pytest
           
-      # Step 4: Run the test suite
+      # Step 4: Run the test suite (The correct way)
       - name: 4. Run tests
         run: pytest
