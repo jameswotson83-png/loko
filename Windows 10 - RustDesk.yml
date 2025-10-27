@@ -1,22 +1,48 @@
-name: Windows - RustDesk
+name: CI/CD Pipeline
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
-    name: Start Building...
-    runs-on: windows-latest
-    timeout-minutes: 9999
-    
+    runs-on: ubuntu-latest
     steps:
-      - name: Downloading & Installing Essentials
-        run: |
-          Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/qdyd4p9t6xoabl95n5o3g/Downloads.bat?rlkey=snr74vv1vr8k5suujugvrhjtm&dl=1" -OutFile "Downloads.bat"
-          cmd /c Downloads.bat
+      # ... Your existing build steps (e.g., checkout, setup, build) ...
 
-      - name: Log In To AnyDesk
-        run: cmd /c show.bat
+      - name: Archive Production Artifacts (if needed)
+        run: zip -r deploy_artifact.zip ./dist
 
-      - name: Time Counter
-        run: python time.py
+      - name: Deploy to Ubuntu Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          # Use the secrets we defined in Step 2
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # The commands to run on your remote Ubuntu server
+          script: |
+            # 1. Navigate to your application directory
+            cd /var/www/my-app
+
+            # 2. Stop the running service (e.g., a systemd service)
+            sudo systemctl stop my-app.service
+
+            # 3. Clean up old files (optional)
+            rm -rf *
+
+            # 4. Unzip the artifact (if you used the zip step above)
+            # You would need to use a separate action like appleboy/scp-action
+            # to transfer the file first. A simpler script is below.
+
+            # --- Simple deployment script (no file transfer) ---
+            # If your build process is just running commands on the server:
+            echo "Deployment started on remote server..."
+            git pull origin main
+            npm install --production
+            npm run build
+            
+            # 5. Restart the service
+            sudo systemctl start my-app.service
+            echo "Deployment complete!"
